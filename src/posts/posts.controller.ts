@@ -4,10 +4,20 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
+import { AccessTokenGuard } from '../auth/guard/bearer-token.guard';
+import { User } from '../users/decorator/user.decorator';
+
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { PaginatePostDto } from './dto/paginate-post.dto';
+import { UsersModel } from '../users/entities/users.entity';
 
 /**
  * @Controller('posts')
@@ -24,38 +34,50 @@ export class PostsController {
    */
 
   @Get()
-  getPosts() {
-    return this.postsService.getAllPosts();
+  // @UseInterceptors(ClassSerializerInterceptor)
+  getPosts(@Query() query: PaginatePostDto) {
+    // return this.postsService.getAllPosts();
+    return this.postsService.paginatePosts(query);
   }
 
   // GET /posts/:id
   // @Param() 데코레이터를 통해서 받아올 수 있다.
   // @Param('id') 매개변수를 통해 어떤 파라메터를 가져올지 지정할 수 있다.
   @Get(':id')
-  getPost(@Param('id') id: string) {
-    return this.postsService.getPostById(+id);
+  getPost(@Param('id', ParseIntPipe) id: number) {
+    return this.postsService.getPostById(id);
+  }
+
+  @Post('random')
+  @UseGuards(AccessTokenGuard)
+  async postPostRandom(@User() user: UsersModel) {
+    await this.postsService.genratePost(user.id);
+
+    return true;
   }
 
   // POST /posts
   // @Body() 데코레이터를 통해서 데이터를 받아올 수 있다.
   // @Body('author') 데코레이터를 통해서 받고자 하는 데이터의 키를 지정할 수 있다.
+
+  // DTO - Data Transfer Object
   @Post()
+  @UseGuards(AccessTokenGuard)
   postPosts(
-    @Body('author') author: string,
-    @Body('title') title: string,
-    @Body('content') content: string,
+    @User('id') id: number,
+    @Body() body: CreatePostDto,
+    // @Body('title') title: string,
+    // @Body('content') content: string,
   ) {
-    return this.postsService.createPost(author, title, content);
+    return this.postsService.createPost(id, body);
   }
 
   @Patch(':id')
   patchPost(
-    @Param('id') id: string,
-    @Body('author') author?: string,
-    @Body('title') title?: string,
-    @Body('content') content?: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdatePostDto,
   ) {
-    return this.postsService.updatePost(+id, author, title, content);
+    return this.postsService.updatePost(id, body);
   }
 
   @Delete(':id')
