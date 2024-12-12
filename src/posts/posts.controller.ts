@@ -61,15 +61,12 @@ export class PostsController {
   @Post()
   @UseGuards(AccessTokenGuard)
   postPosts(
-    @Request() req: any,
-    @User('id') id: number,
+    @User() user: UsersModel,
     @Body() body: CreatePostDto,
     // @Body('title') title: string,
     // @Body('content') content: string,
   ) {
-    const authorId = req.user.id;
-
-    return this.postsService.createPost(id, body);
+    return this.postsService.createPost(user.id, body);
   }
 
   @Patch(':id')
