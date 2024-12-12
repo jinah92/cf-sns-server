@@ -7,6 +7,8 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { User } from '../users/decorator/user.decorator';
@@ -14,6 +16,7 @@ import { User } from '../users/decorator/user.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { UsersModel } from '../users/entities/users.entity';
+import { AccessTokenGuard } from '../auth/guard/berear-token.guard';
 
 /**
  * @Controller('posts')
@@ -56,12 +59,16 @@ export class PostsController {
 
   // DTO - Data Transfer Object
   @Post()
+  @UseGuards(AccessTokenGuard)
   postPosts(
+    @Request() req: any,
     @User('id') id: number,
     @Body() body: CreatePostDto,
     // @Body('title') title: string,
     // @Body('content') content: string,
   ) {
+    const authorId = req.user.id;
+
     return this.postsService.createPost(id, body);
   }
 
