@@ -24,6 +24,18 @@ export class AuthService {
    *    - access토큰을 새로 발급 받을 수 있는 요청, refresh토큰을 새로 발급 받을 수 있는 요청이 필요하다.
    */
 
+  async extractTokenFromHeader(header: string, isBearer: boolean = false) {
+    const splitToken = header.split(' ');
+
+    const prefix = isBearer ? 'Bearer' : 'Basic';
+
+    if (splitToken.length !== 2 || splitToken[0] !== prefix) {
+      throw new UnauthorizedException('잘못된 토큰입니다');
+    }
+
+    return splitToken[1]; // 토큰값 반환
+  }
+
   /**
    *  1) registerWithEmail
    *    - email, nickname, password를 입력받고 사용자를 생성한다.
