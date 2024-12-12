@@ -1,14 +1,12 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { Roles } from '../constants/roles.const';
 import { PostsModel } from '../../posts/entities/posts.entity';
 import { IsEmail, IsString, Length } from 'class-validator';
 import { Exclude } from 'class-transformer';
+import { BaseModel } from '../../common/entity/base.entity';
 
 @Entity()
-export class UsersModel {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class UsersModel extends BaseModel {
   @Column({
     length: 20, //  최대길이 : 20
     unique: true, // 유일무일한 값이 되어야 함
