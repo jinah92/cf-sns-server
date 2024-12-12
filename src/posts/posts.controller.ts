@@ -7,16 +7,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query,
-  UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
-import { AccessTokenGuard } from '../auth/guard/bearer-token.guard';
 import { User } from '../users/decorator/user.decorator';
 
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { PaginatePostDto } from './dto/paginate-post.dto';
 import { UsersModel } from '../users/entities/users.entity';
 
 /**
@@ -35,9 +31,8 @@ export class PostsController {
 
   @Get()
   // @UseInterceptors(ClassSerializerInterceptor)
-  getPosts(@Query() query: PaginatePostDto) {
-    // return this.postsService.getAllPosts();
-    return this.postsService.paginatePosts(query);
+  getPosts() {
+    return this.postsService.getAllPosts();
   }
 
   // GET /posts/:id
@@ -49,7 +44,6 @@ export class PostsController {
   }
 
   @Post('random')
-  @UseGuards(AccessTokenGuard)
   async postPostRandom(@User() user: UsersModel) {
     await this.postsService.genratePost(user.id);
 
@@ -62,7 +56,6 @@ export class PostsController {
 
   // DTO - Data Transfer Object
   @Post()
-  @UseGuards(AccessTokenGuard)
   postPosts(
     @User('id') id: number,
     @Body() body: CreatePostDto,
