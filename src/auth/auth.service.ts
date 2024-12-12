@@ -53,6 +53,35 @@ export class AuthService {
     };
   }
 
+  /** 토큰 검증 */
+  verifyToken(token: string) {
+    return this.jwtService.verify(token, {
+      secret: JWT_SECRET,
+    });
+  }
+
+  rotateToken(token: string, isRefreshToken: boolean = false) {
+    const decoded = this.jwtService.verify(token, {
+      secret: JWT_SECRET,
+    });
+
+    /**
+     * sub: id
+     * email: email
+     * type: 'access' | 'refresh'
+     */
+    if (decoded.type !== 'refresh') {
+      throw new UnauthorizedException(
+        '토큰 재발급은 refresh 토큰으로만 가능합니다',
+      );
+    }
+
+    return this.signToken({
+      ...decoded,
+      isRefreshToken,
+    });
+  }
+
   /**
    *  1) registerWithEmail
    *    - email, nickname, password를 입력받고 사용자를 생성한다.
