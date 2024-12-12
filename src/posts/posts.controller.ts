@@ -61,12 +61,12 @@ export class PostsController {
   @Post()
   @UseGuards(AccessTokenGuard)
   postPosts(
-    @User() user: UsersModel,
+    @User('id') id: number,
     @Body() body: CreatePostDto,
     // @Body('title') title: string,
     // @Body('content') content: string,
   ) {
-    return this.postsService.createPost(user.id, body);
+    return this.postsService.createPost(id, body);
   }
 
   @Patch(':id')
