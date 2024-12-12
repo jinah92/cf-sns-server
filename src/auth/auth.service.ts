@@ -24,7 +24,7 @@ export class AuthService {
    *    - access토큰을 새로 발급 받을 수 있는 요청, refresh토큰을 새로 발급 받을 수 있는 요청이 필요하다.
    */
 
-  async extractTokenFromHeader(header: string, isBearer: boolean = false) {
+  extractTokenFromHeader(header: string, isBearer: boolean = false) {
     const splitToken = header.split(' ');
 
     const prefix = isBearer ? 'Bearer' : 'Basic';
@@ -34,6 +34,23 @@ export class AuthService {
     }
 
     return splitToken[1]; // 토큰값 반환
+  }
+
+  decodeBasicToken(base64String: string) {
+    const decoded = Buffer.from(base64String, 'base64').toString('utf8'); // base64 => string으로 디코딩
+
+    const split = decoded.split(':');
+
+    if (split.length !== 2) {
+      throw new UnauthorizedException('잘못된 유형의 토큰입니다.');
+    }
+
+    const [email, password] = split;
+
+    return {
+      email,
+      password,
+    };
   }
 
   /**
