@@ -16,13 +16,4 @@ export class UsersController {
   getUsers() {
     return this.usersService.getAllUsers();
   }
-
-  @Post()
-  postUser(
-    @Body('nickname') nickname: string,
-    @Body('email') email: string,
-    @Body('password') password: string,
-  ) {
-    return this.usersService.createUser({ email, nickname, password });
-  }
 }
