@@ -36,7 +36,7 @@ export class AuthService {
    * 2) sub => id
    * 3) type: 'access' | 'refresh'
    */
-  async signToken(
+  signToken(
     user: Pick<UsersModel, 'email' | 'id'>,
     isRefreshToken: boolean = false,
   ) {
@@ -51,5 +51,12 @@ export class AuthService {
       // seconds
       expiresIn: isRefreshToken ? 3600 : 300,
     });
+  }
+
+  async loginUser(user: Pick<UsersModel, 'email' | 'id'>) {
+    return {
+      accessToken: this.signToken(user),
+      refreshToken: this.signToken(user, true),
+    };
   }
 }
