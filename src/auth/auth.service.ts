@@ -55,9 +55,13 @@ export class AuthService {
 
   /** 토큰 검증 */
   verifyToken(token: string) {
-    return this.jwtService.verify(token, {
-      secret: JWT_SECRET,
-    });
+    try {
+      return this.jwtService.verify(token, {
+        secret: JWT_SECRET,
+      });
+    } catch (e) {
+      throw new UnauthorizedException('유효하지 않은 토큰입니다');
+    }
   }
 
   rotateToken(token: string, isRefreshToken: boolean = false) {
