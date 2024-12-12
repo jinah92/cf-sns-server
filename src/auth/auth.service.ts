@@ -12,6 +12,19 @@ export class AuthService {
     private readonly usersService: UsersService,
   ) {}
   /**
+   * 토큰을 사용하는 방식
+   *
+   * 1) 사용자가 로그인 또는 회원가입을 진행하면, accessToken과 refreshToken을 발급받는다.
+   * 2) 로그인 할때는 Basic 토큰과 함께 요청을 보낸다. Basic 토큰은 '이메일:비밀번호'를 Base64 인코딩한 형태이다. (ex) authorization: 'Basic {token}'
+   * 3) 아무나 접근할 수 없는 정보 (private route)를 접근할때는 accessToken을 Header에 추가해서 요청과 함께 보낸다. (ex) authorization: 'Bearer {token}'
+   * 4) 토큰과 요청을 함께 받은 서버는 토큰 검증을 통해 현재 요청을 보낸 사용자를 식별할 수 있다.
+   *    ex) 현재 로그인한 사용자가 작성한 post만을 가져오려면, 토큰의 sub에 입력된 사용자의 포스트만 필터링할 수 있다. (특정 사용자의 토큰이 없다면 다른 사용자의 데이터에 접근하지 못한다.)
+   * 5) 모든 토큰은 만료기간이 있다. 만료기간이 지나면 새로 토큰을 발급받아야 한다.
+   *    - 만료기간이 지나면 jwtService.verify에서 인증 통과되지 못한다.
+   *    - access토큰을 새로 발급 받을 수 있는 요청, refresh토큰을 새로 발급 받을 수 있는 요청이 필요하다.
+   */
+
+  /**
    *  1) registerWithEmail
    *    - email, nickname, password를 입력받고 사용자를 생성한다.
    *    - 생성이 완료되면 accessToken과 refeshToken을 반환한다. (자동 로그인)
