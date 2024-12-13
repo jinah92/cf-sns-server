@@ -14,7 +14,7 @@ export class PaginatePostDto {
   @IsIn(['ASC'])
   @IsOptional()
   // eslint-disable-next-line @typescript-eslint/prefer-as-const
-  order__createdAt?: Order = 'ASC';
+  order__createdAt?: Order = 'ASC'; // dto의 기본값을 넣어주기 위해서는, main에 globalPipie를 설정해줘야함. ValidationPipe의 transform 옵션을 true로 설정한다.
 
   // 몇개의 데이터를 응답으로 받을지
   @IsNumber()
