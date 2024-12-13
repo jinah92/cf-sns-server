@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { BaseModel } from './entity/base.entity';
 import { FILTER_MAPPER } from './const/filter-mapper.const';
+import { HOST, PROTOCOL } from './const/env.const';
 
 @Injectable()
 export class CommonService {
@@ -35,6 +36,54 @@ export class CommonService {
     path: string,
   ) {
     const findOptions = this.composeFindOptions<T>(dto);
+
+    const results = await repository.find({
+      ...findOptions,
+      ...overrideFindOptions,
+    });
+
+    const lastItem =
+      results.length > 0 && results.length === dto.take
+        ? results[results.length - 1]
+        : null;
+
+    const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/posts`);
+
+    if (nextUrl) {
+      /**
+       * dto의 key를 순회하면서
+       * key에 해당되는 value가 존재하면, parama에 그대로 붙여넣는다.
+       */
+      for (const key of Object.keys(dto)) {
+        if (dto[key]) {
+          if (
+            key !== 'where__id__more_than' &&
+            key !== 'where__id__less_than'
+          ) {
+            nextUrl.searchParams.append(key, dto[key]);
+          }
+        }
+      }
+
+      let key = null;
+
+      if (dto.order__createdAt === 'ASC') {
+        key = 'where__id__more_than';
+      } else {
+        key = 'where__id__less_than';
+      }
+
+      nextUrl.searchParams.append(key, lastItem.id.toString());
+    }
+
+    return {
+      data: results,
+      cursor: {
+        after: lastItem?.id ?? null,
+      },
+      count: results.length,
+      next: nextUrl?.toString() ?? null,
+    };
   }
 
   private composeFindOptions<T extends BaseModel>(
