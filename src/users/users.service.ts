@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersModel } from './entities/users.entity';
 import { Repository } from 'typeorm';
+import { RegisterUserDto } from '../auth/dto/register-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -10,7 +11,7 @@ export class UsersService {
     private readonly usersRepository: Repository<UsersModel>,
   ) {}
 
-  async createUser(_user: Pick<UsersModel, 'email' | 'nickname' | 'password'>) {
+  async createUser(_user: RegisterUserDto) {
     // 1. nickname 중복확인
     // exist() => 조건에 해당하는 갓이 있으면 true 반환
     const nicknameExist = await this.usersRepository.exists({

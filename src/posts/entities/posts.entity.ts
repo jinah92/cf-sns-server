@@ -12,7 +12,9 @@ export class PostsModel extends BaseModel {
   author: UsersModel;
 
   @Column()
-  @IsString()
+  @IsString({
+    message: 'title은 string값을 입력해주세요',
+  })
   title: string;
 
   @Column()

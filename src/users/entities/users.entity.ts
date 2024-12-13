@@ -11,6 +11,7 @@ export class UsersModel extends BaseModel {
     length: 20, //  최대길이 : 20
     unique: true, // 유일무일한 값이 되어야 함
   })
+  @IsString()
   nickname: string;
 
   @Column({
