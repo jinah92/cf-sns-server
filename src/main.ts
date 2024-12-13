@@ -9,7 +9,7 @@ async function bootstrap() {
     new ValidationPipe({
       transform: true,
       transformOptions: {
-        enableImplicitConversion: true,
+        enableImplicitConversion: true, // Type Annotation 역할 수행
       },
       whitelist: true,
       forbidNonWhitelisted: true,
