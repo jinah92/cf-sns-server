@@ -48,6 +48,7 @@ export class PostsController {
   }
 
   @Post('random')
+  @UseGuards(AccessTokenGuard)
   async postPostRandom(@User() user: UsersModel) {
     await this.postsService.genratePost(user.id);
 
