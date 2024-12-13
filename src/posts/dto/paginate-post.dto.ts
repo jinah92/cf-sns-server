@@ -1,6 +1,6 @@
 import { IsIn, IsNumber, IsOptional } from 'class-validator';
 
-type Order = 'ASC';
+type Order = 'ASC' | 'DESC';
 
 export class PaginatePostDto {
   // 이전 마지막 데이터의 ID
@@ -9,9 +9,13 @@ export class PaginatePostDto {
   @IsOptional()
   where__id_more_than?: number;
 
+  @IsNumber()
+  @IsOptional()
+  where__id_less_than?: number;
+
   // 정렬
   // createdAt : 생성된 시간의 내림차/오름차순으로 정렬
-  @IsIn(['ASC'])
+  @IsIn(['ASC', 'DESC'])
   @IsOptional()
   // eslint-disable-next-line @typescript-eslint/prefer-as-const
   order__createdAt?: Order = 'ASC'; // dto의 기본값을 넣어주기 위해서는, main에 globalPipie를 설정해줘야함. ValidationPipe의 transform 옵션을 true로 설정한다.

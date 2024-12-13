@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { MoreThan, Repository } from 'typeorm';
+import { FindOptionsWhere, LessThan, MoreThan, Repository } from 'typeorm';
 import { PostsModel } from './entities/posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
+import { HOST, PROTOCOL } from '../common/const/env.const';
 
 @Injectable()
 export class PostsService {
@@ -24,15 +25,53 @@ export class PostsService {
 
   // 오름차순으로 정렬하는 pagination만 구현한다
   async paginationPosts(dto: PaginatePostDto) {
+    const where: FindOptionsWhere<PostsModel> = {};
+
+    if (dto.where__id_less_than) {
+      where.id = LessThan(dto.where__id_less_than);
+    } else if (dto.where__id_more_than) {
+      where.id = MoreThan(dto.where__id_more_than);
+    }
+
     const posts = await this.postsRepository.find({
-      where: {
-        id: MoreThan(dto.where__id_more_than ?? 0),
-      },
+      where,
       order: {
         createdAt: dto.order__createdAt,
       },
       take: dto.take,
     });
+
+    // 해당되는 포스트가 0개 이상이면, 마지막 포스트를 가져오고 아니면 null을 가져온다
+    const lastItem =
+      posts.length > 0 && posts.length === dto.take
+        ? posts[posts.length - 1]
+        : null;
+
+    const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/posts`);
+
+    if (nextUrl) {
+      /**
+       * dto의 key를 순회하면서
+       * key에 해당되는 value가 존재하면, parama에 그대로 붙여넣는다.
+       */
+      for (const key of Object.keys(dto)) {
+        if (dto[key]) {
+          if (key !== 'where__id_more_than' && key !== 'where__id_less_than') {
+            nextUrl.searchParams.append(key, dto[key]);
+          }
+        }
+      }
+
+      let key = null;
+
+      if (dto.order__createdAt === 'ASC') {
+        key = 'where__id_more_than';
+      } else {
+        key = 'where__id_less_than';
+      }
+
+      nextUrl.searchParams.append(key, lastItem.id.toString());
+    }
 
     /**
      * Response
@@ -44,9 +83,13 @@ export class PostsService {
      * count: 응답한 데이터의 개수
      * next: 다음 요청 URL
      */
-
     return {
       data: posts,
+      cursor: {
+        after: lastItem?.id ?? null,
+      },
+      count: posts.length,
+      next: nextUrl?.toString() ?? null,
     };
   }
 
