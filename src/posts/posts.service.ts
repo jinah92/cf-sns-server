@@ -21,6 +21,8 @@ export class PostsService {
     });
   }
 
+  paginationPosts() {}
+
   /**
    * Response
    *

@@ -7,7 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Request,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
@@ -17,6 +17,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { UsersModel } from '../users/entities/users.entity';
 import { AccessTokenGuard } from '../auth/guard/berear-token.guard';
+import { PaginatePostDto } from './dto/paginate-post.dto';
 
 /**
  * @Controller('posts')
@@ -34,7 +35,7 @@ export class PostsController {
 
   @Get()
   // @UseInterceptors(ClassSerializerInterceptor)
-  getPosts() {
+  getPosts(@Query() query: PaginatePostDto) {
     return this.postsService.getAllPosts();
   }
 
