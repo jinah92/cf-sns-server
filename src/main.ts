@@ -11,8 +11,8 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true, // Type Annotation 역할 수행
       },
-      whitelist: true,
-      forbidNonWhitelisted: true,
+      whitelist: true, // dto에서 정의하지 않은 프로퍼티를 쿼리로 보낼 경우, striping 처리
+      forbidNonWhitelisted: true, // striping 하지 않고 에러로 반환
     }),
   ); // global pipe로 설정
 

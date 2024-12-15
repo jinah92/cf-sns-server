@@ -170,7 +170,7 @@ export class CommonService {
        * FILTER_MAPPER에 미리 정의해둔 값들로
        * feild 값에 FILTER_MAPPER에서 해당되는 utility를 가져온 후 값에 적용해준다.
        */
-      const [_, field, oprator] = split;
+      const [_, field, operator] = split;
 
       // where__id__between = 3, 4
       // 만약 split 대상 문자가 존재하지 않으면 길이가 무조건 1이다
@@ -178,7 +178,11 @@ export class CommonService {
 
       // filed => id, operator => more_than
       // FILTER_MAPPER[operator] => MoreThan
-      options[field] = FILTER_MAPPER[oprator](value);
+      if (operator === 'i_like') {
+        options[field] = FILTER_MAPPER[operator](`%${value}%`);
+      } else {
+        options[field] = FILTER_MAPPER[operator](value);
+      }
     }
 
     return options;
