@@ -8,7 +8,9 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { User } from '../users/decorator/user.decorator';
@@ -18,6 +20,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { UsersModel } from '../users/entities/users.entity';
 import { AccessTokenGuard } from '../auth/guard/berear-token.guard';
 import { PaginatePostDto } from './dto/paginate-post.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 /**
  * @Controller('posts')
@@ -62,13 +65,13 @@ export class PostsController {
   // DTO - Data Transfer Object
   @Post()
   @UseGuards(AccessTokenGuard)
+  @UseInterceptors(FileInterceptor('image'))
   postPosts(
     @User('id') id: number,
     @Body() body: CreatePostDto,
-    // @Body('title') title: string,
-    // @Body('content') content: string,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.postsService.createPost(id, body);
+    return this.postsService.createPost(id, body, file?.filename);
   }
 
   @Patch(':id')
