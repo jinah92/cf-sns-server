@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { HttpExceptionFilter } from './common/exception-filter/http.exception-filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +16,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true, // striping 하지 않고 에러로 반환
     }),
   ); // global pipe로 설정
+
+  // app.useGlobalFilters(new HttpExceptionFilter()) // 글로벌 필터 적용
 
   await app.listen(process.env.PORT ?? 3001);
 }
