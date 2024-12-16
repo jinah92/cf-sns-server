@@ -31,6 +31,6 @@ export class PostsModel extends BaseModel {
   @Column()
   commentCount: number;
 
-  @OneToMany((type) => ImageModel, (image) => image.posts)
+  @OneToMany((type) => ImageModel, (image) => image.post)
   images?: ImageModel[];
 }

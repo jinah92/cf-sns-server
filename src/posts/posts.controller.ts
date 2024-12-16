@@ -18,6 +18,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { UsersModel } from '../users/entities/users.entity';
 import { AccessTokenGuard } from '../auth/guard/berear-token.guard';
 import { PaginatePostDto } from './dto/paginate-post.dto';
+import { ImageModelType } from '../common/entity/image.entity';
 
 /**
  * @Controller('posts')
@@ -77,9 +78,18 @@ export class PostsController {
   @Post()
   @UseGuards(AccessTokenGuard)
   async postPosts(@User('id') id: number, @Body() body: CreatePostDto) {
-    await this.postsService.createPostImage(body);
+    const post = await this.postsService.createPost(id, body);
 
-    return this.postsService.createPost(id, body);
+    for (let i = 0; i < body.images.length; i++) {
+      await this.postsService.createPostImage({
+        post,
+        order: i,
+        path: body.images[i],
+        type: ImageModelType.POST_IMAGE,
+      });
+    }
+
+    return this.postsService.getPostById(post.id);
   }
 
   @Patch(':id')
