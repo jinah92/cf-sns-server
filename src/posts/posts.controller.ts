@@ -60,6 +60,20 @@ export class PostsController {
   // @Body('author') 데코레이터를 통해서 받고자 하는 데이터의 키를 지정할 수 있다.
 
   // DTO - Data Transfer Object
+
+  // <<Transaction>>
+  // A model, B model
+  // Post api => A 모델을 저장하고, B 모델을 저장한다.
+  // await repository.save(a);
+  // await repository.save(b);
+  //
+  // 만약 a를 저장하다가 실패하면 b를 저장하지 안될 경우
+  // all or nothing
+
+  // Transaction의 기능
+  // 1. start => 시작
+  // 2. commit => 저장
+  // 3. rollback => 원상복구
   @Post()
   @UseGuards(AccessTokenGuard)
   async postPosts(@User('id') id: number, @Body() body: CreatePostDto) {
