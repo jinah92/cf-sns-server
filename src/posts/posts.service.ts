@@ -26,7 +26,12 @@ export class PostsService {
   }
 
   async paginationPosts(dto: PaginatePostDto) {
-    return this.commonService.paginate(dto, this.postsRepository, {}, 'posts');
+    return this.commonService.paginate(
+      dto,
+      this.postsRepository,
+      { relations: ['author'] },
+      'posts',
+    );
     // return dto.page
     //   ? this.pagePaginationPosts(dto)
     //   : this.cursorPaginationPosts(dto);
