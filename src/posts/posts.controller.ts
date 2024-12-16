@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  InternalServerErrorException,
   Param,
   ParseIntPipe,
   Patch,
@@ -21,9 +20,11 @@ import { UsersModel } from '../users/entities/users.entity';
 import { AccessTokenGuard } from '../auth/guard/berear-token.guard';
 import { PaginatePostDto } from './dto/paginate-post.dto';
 import { ImageModelType } from '../common/entity/image.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner as QR } from 'typeorm';
 import { PostsImagesService } from './image/images.service';
 import { LogInterceptor } from '../common/interceptor/log.interceptor';
+import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
+import { QueryRunner } from '../common/decorator/query-runner.decorator';
 
 /**
  * @Controller('posts')
@@ -85,43 +86,28 @@ export class PostsController {
   // 2. commit => 저장
   // 3. rollback => 원상복구
   @Post()
+  @UseInterceptors(TransactionInterceptor)
   @UseGuards(AccessTokenGuard)
-  async postPosts(@User('id') id: number, @Body() body: CreatePostDto) {
-    // 트랜잭션과 관련된 모든 쿼리를 담당할 쿼리 러너를 생성한다.
-    const qr = this.dataSource.createQueryRunner();
-    // 쿼리 러너에 연결한다
-    await qr.connect();
-    // 쿼리 러너에서 트랜잭션을 시작한다.
-    // 이 시점부터 같은 쿼리 러너를 사용하면 트랜잭션 안에서 데이터베이스 액션을 실행할 수 있다.
-    await qr.startTransaction();
+  async postPosts(
+    @User('id') id: number,
+    @Body() body: CreatePostDto,
+    @QueryRunner() qr: QR,
+  ) {
+    const post = await this.postsService.createPost(id, body, qr);
 
-    // 로직 실행
-    try {
-      const post = await this.postsService.createPost(id, body, qr);
-
-      for (let i = 0; i < body.images.length; i++) {
-        await this.postsimagesService.createPostImage(
-          {
-            post,
-            order: i,
-            path: body.images[i],
-            type: ImageModelType.POST_IMAGE,
-          },
-          qr,
-        );
-      }
-
-      await qr.commitTransaction(); // commit
-      await qr.release();
-
-      return this.postsService.getPostById(post.id);
-    } catch (e) {
-      // 에러가 발생하면, 트랜잭션을 종료하고 원래 상태로 되돌린다. (rollback)
-      await qr.rollbackTransaction();
-      await qr.release();
-
-      throw new InternalServerErrorException('알 수 없는 에러');
+    for (let i = 0; i < body.images.length; i++) {
+      await this.postsimagesService.createPostImage(
+        {
+          post,
+          order: i,
+          path: body.images[i],
+          type: ImageModelType.POST_IMAGE,
+        },
+        qr,
+      );
     }
+
+    return this.postsService.getPostById(post.id, qr);
   }
 
   @Patch(':id')
