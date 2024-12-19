@@ -38,8 +38,14 @@ export class ChatsGateway implements OnGatewayConnection {
     @MessageBody() message: { message: string; chatId: number },
     @ConnectedSocket() socket: Socket,
   ) {
-    this.server
-      .in(message.chatId.toString())
-      .emit('receive_message', 'hello from server');
+    // 브로드캐스팅 (메시지 보낸 client을 제외하고 해당되는 room에 속한 client에 메시지 전송)
+    socket
+      .to(message.chatId.toString())
+      .emit('receive_message', message.message);
+
+    // 해당하는 room에 연결된 client에 메시지 전달
+    // this.server
+    //   .in(message.chatId.toString())
+    //   .emit('receive_message', 'hello from server');
   }
 }
