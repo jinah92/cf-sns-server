@@ -13,15 +13,11 @@ import { ChatsService } from './chats.service';
 import { EnterChatDto } from './dto/enter-chat.dto';
 import { CreateMessagesDto } from './messages/dto/create-messages.dto';
 import { ChatsMessagesService } from './messages/messages.service';
-import {
-  UseFilters,
-  UseGuards,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { SocketCatchHttpExceptionFilter } from '../common/exception-filter/socket-catch-http.exception-filter';
-import { SocketBearerTokenGuard } from '../auth/guard/socket/socket-bearer-token.guard';
 import { UsersModel } from '../users/entities/users.entity';
+import { UsersService } from '../users/users.service';
+import { AuthService } from '../auth/auth.service';
 
 @WebSocketGateway({
   // ws://localhost:3001/chats
@@ -31,13 +27,36 @@ export class ChatsGateway implements OnGatewayConnection {
   constructor(
     private readonly chatsService: ChatsService,
     private readonly messagesService: ChatsMessagesService,
+    private readonly usersService: UsersService,
+    private readonly authService: AuthService,
   ) {}
 
   @WebSocketServer()
   server: Server;
 
-  handleConnection(socket: Socket) {
+  async handleConnection(socket: Socket & { user: UsersModel }) {
     console.log(`on connect called: ${socket.id}`);
+
+    const headers = socket.handshake.headers;
+
+    const rawToken = headers['authorization'];
+
+    if (!rawToken) {
+      socket.disconnect();
+    }
+
+    try {
+      const token = this.authService.extractTokenFromHeader(rawToken, true);
+
+      const payload = this.authService.verifyToken(token);
+      const user = await this.usersService.getUserByEmail(payload.email);
+
+      socket.user = user;
+
+      return true;
+    } catch (e) {
+      socket.disconnect();
+    }
   }
 
   @UsePipes(
@@ -51,7 +70,6 @@ export class ChatsGateway implements OnGatewayConnection {
     }),
   )
   @UseFilters(SocketCatchHttpExceptionFilter)
-  @UseGuards(SocketBearerTokenGuard)
   @SubscribeMessage('create_chat')
   async createChat(
     @MessageBody() data: CreateChatDto,
@@ -60,11 +78,22 @@ export class ChatsGateway implements OnGatewayConnection {
     const chat = await this.chatsService.createChat(data);
   }
 
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
+  @UseFilters(SocketCatchHttpExceptionFilter)
   @SubscribeMessage('enter_chat')
   async enterChat(
     // 방의 chat id를 리스트로 받는다
     @MessageBody() data: EnterChatDto,
-    @ConnectedSocket() socket: Socket,
+    @ConnectedSocket() socket: Socket & { user: UsersModel },
   ) {
     for (const chatId of data.chatIds) {
       const exists = await this.chatsService.checkIfChatExists(chatId);
@@ -80,10 +109,21 @@ export class ChatsGateway implements OnGatewayConnection {
     socket.join(data.chatIds.map((x) => x.toString()));
   }
 
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
+  @UseFilters(SocketCatchHttpExceptionFilter)
   @SubscribeMessage('send_message')
   async sendMessage(
     @MessageBody() dto: CreateMessagesDto,
-    @ConnectedSocket() socket: Socket,
+    @ConnectedSocket() socket: Socket & { user: UsersModel },
   ) {
     const chatExists = await this.chatsService.checkIfChatExists(dto.chatId);
 
@@ -93,7 +133,10 @@ export class ChatsGateway implements OnGatewayConnection {
       );
     }
 
-    const message = await this.messagesService.createMessage(dto);
+    const message = await this.messagesService.createMessage(
+      dto,
+      socket.user.id,
+    );
 
     // 브로드캐스팅 (메시지 보낸 client을 제외하고 해당되는 room에 속한 client에 메시지 전송)
     socket
