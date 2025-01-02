@@ -231,4 +231,12 @@ export class PostsService {
 
     return id;
   }
+
+  async checkPostExistsById(id: number) {
+    return this.postsRepository.exists({
+      where: {
+        id,
+      },
+    });
+  }
 }

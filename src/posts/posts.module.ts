@@ -17,6 +17,7 @@ import { PostsImagesService } from './image/images.service';
     AuthModule,
     CommonModule,
   ],
+  exports: [PostsService],
   controllers: [PostsController],
   providers: [PostsService, PostsImagesService],
 })
