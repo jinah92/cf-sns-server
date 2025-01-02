@@ -26,6 +26,7 @@ import { TransactionInterceptor } from '../common/interceptor/transaction.interc
 import { QueryRunner } from '../common/decorator/query-runner.decorator';
 import { Roles } from '../users/decorator/role.decorator';
 import { RolesEnum } from '../users/constants/roles.const';
+import { IsPublic } from '../common/decorator/is-public.decorator';
 
 /**
  * @Controller('posts')
@@ -46,6 +47,7 @@ export class PostsController {
    */
 
   @Get()
+  @IsPublic()
   // @UseInterceptors(LogInterceptor)
   getPosts(@Query() query: PaginatePostDto) {
     return this.postsService.paginationPosts(query);
