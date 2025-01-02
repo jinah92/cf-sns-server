@@ -17,7 +17,6 @@ import { User } from '../users/decorator/user.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { UsersModel } from '../users/entities/users.entity';
-import { AccessTokenGuard } from '../auth/guard/berear-token.guard';
 import { PaginatePostDto } from './dto/paginate-post.dto';
 import { ImageModelType } from '../common/entity/image.entity';
 import { DataSource, QueryRunner as QR } from 'typeorm';
@@ -27,6 +26,7 @@ import { QueryRunner } from '../common/decorator/query-runner.decorator';
 import { Roles } from '../users/decorator/role.decorator';
 import { RolesEnum } from '../users/constants/roles.const';
 import { IsPublic } from '../common/decorator/is-public.decorator';
+import { IsPostMineOrAdminGuard } from './guard/is-post-mine-or-admin.guard';
 
 /**
  * @Controller('posts')
@@ -112,18 +112,19 @@ export class PostsController {
     return this.postsService.getPostById(post.id, qr);
   }
 
-  @Patch(':id')
+  @Patch(':postId')
+  @UseGuards(IsPostMineOrAdminGuard)
   patchPost(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('postId', ParseIntPipe) postId: number,
     @Body() body: UpdatePostDto,
   ) {
-    return this.postsService.updatePost(id, body);
+    return this.postsService.updatePost(postId, body);
   }
 
-  @Delete(':id')
-  @Roles(RolesEnum.ADMIN)
-  deletePost(@Param('id') id: string) {
-    return this.postsService.deletePost(+id);
+  @Delete(':postId')
+  @UseGuards(IsPostMineOrAdminGuard)
+  deletePost(@Param('postId') postId: string) {
+    return this.postsService.deletePost(+postId);
   }
 
   // RBAC => Role Based Access Control

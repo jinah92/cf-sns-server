@@ -11,7 +11,7 @@ import { Request } from 'express';
 import { UsersModel } from '../../users/entities/users.entity';
 
 @Injectable()
-export class IsPostMineOrAdmin implements CanActivate {
+export class IsPostMineOrAdminGuard implements CanActivate {
   constructor(private readonly postService: PostsService) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest() as Request & {
