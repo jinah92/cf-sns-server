@@ -34,6 +34,7 @@ import { CommentsModule } from './posts/comments/comments.module';
 import { CommentsModel } from './posts/comments/entity/comments.entity';
 import { RolesGuard } from './users/guard/roles.guard';
 import { AccessTokenGuard } from './auth/guard/berear-token.guard';
+import { UserFollowersModel } from './users/entities/user-followers.entity';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { AccessTokenGuard } from './auth/guard/berear-token.guard';
         ChatsModel,
         MessagesModel,
         CommentsModel,
+        UserFollowersModel,
       ],
       synchronize: true, // TypeORM 기준으로 데이터베이스 싱크를 맞춰준다. production 환경에서는 사용하지 않는 것이 좋다.
     }),
