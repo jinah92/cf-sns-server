@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { User } from '../users/decorator/user.decorator';
-
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { UsersModel } from '../users/entities/users.entity';
@@ -23,8 +22,6 @@ import { DataSource, QueryRunner as QR } from 'typeorm';
 import { PostsImagesService } from './image/images.service';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
 import { QueryRunner } from '../common/decorator/query-runner.decorator';
-import { Roles } from '../users/decorator/role.decorator';
-import { RolesEnum } from '../users/constants/roles.const';
 import { IsPublic } from '../common/decorator/is-public.decorator';
 import { IsPostMineOrAdminGuard } from './guard/is-post-mine-or-admin.guard';
 
