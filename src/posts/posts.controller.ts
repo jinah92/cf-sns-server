@@ -57,12 +57,12 @@ export class PostsController {
   // @Param() 데코레이터를 통해서 받아올 수 있다.
   // @Param('id') 매개변수를 통해 어떤 파라메터를 가져올지 지정할 수 있다.
   @Get(':id')
+  @IsPublic()
   getPost(@Param('id', ParseIntPipe) id: number) {
     return this.postsService.getPostById(id);
   }
 
   @Post('random')
-  @UseGuards(AccessTokenGuard)
   async postPostRandom(@User() user: UsersModel) {
     await this.postsService.genratePost(user.id);
 
@@ -90,7 +90,6 @@ export class PostsController {
   // 3. rollback => 원상복구
   @Post()
   @UseInterceptors(TransactionInterceptor)
-  @UseGuards(AccessTokenGuard)
   async postPosts(
     @User('id') id: number,
     @Body() body: CreatePostDto,
@@ -122,7 +121,6 @@ export class PostsController {
   }
 
   @Delete(':id')
-  @UseGuards(AccessTokenGuard)
   @Roles(RolesEnum.ADMIN)
   deletePost(@Param('id') id: string) {
     return this.postsService.deletePost(+id);
