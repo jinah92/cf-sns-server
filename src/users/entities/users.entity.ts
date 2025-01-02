@@ -1,5 +1,5 @@
 import { Column, Entity, JoinTable, ManyToMany, OneToMany } from 'typeorm';
-import { Roles } from '../constants/roles.const';
+import { RolesEnum } from '../constants/roles.const';
 import { PostsModel } from '../../posts/entities/posts.entity';
 import { IsEmail, IsString, Length } from 'class-validator';
 import { Exclude } from 'class-transformer';
@@ -60,10 +60,10 @@ export class UsersModel extends BaseModel {
 
   @Column({
     type: 'enum',
-    enum: Roles,
-    default: Roles.USER,
+    enum: RolesEnum,
+    default: RolesEnum.USER,
   })
-  role: Roles;
+  role: RolesEnum;
 
   @OneToMany(() => PostsModel, (post) => post.author)
   posts: PostsModel[];

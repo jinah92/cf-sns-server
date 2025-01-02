@@ -24,6 +24,8 @@ import { DataSource, QueryRunner as QR } from 'typeorm';
 import { PostsImagesService } from './image/images.service';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
 import { QueryRunner } from '../common/decorator/query-runner.decorator';
+import { Roles } from '../users/decorator/role.decorator';
+import { RolesEnum } from '../users/constants/roles.const';
 
 /**
  * @Controller('posts')
@@ -118,7 +120,11 @@ export class PostsController {
   }
 
   @Delete(':id')
+  @UseGuards(AccessTokenGuard)
+  @Roles(RolesEnum.ADMIN)
   deletePost(@Param('id') id: string) {
     return this.postsService.deletePost(+id);
   }
+
+  // RBAC => Role Based Access Control
 }
