@@ -98,13 +98,13 @@ export class CommentsController {
   @UseGuards(IsCommentMineOrAdminGuard)
   async deletePost(
     @Param('commentId', ParseIntPipe) commentId: number,
-    @Param('postId', ParseIntPipe) postId: number
+    @Param('postId', ParseIntPipe) postId: number,
     @QueryRunner() qr: QR,
   ) {
     const response = await this.commentsService.deleteComment(commentId, qr);
 
-    await this.postService.decrementCommentCount(postId, qr)
+    await this.postService.decrementCommentCount(postId, qr);
 
-    return response
+    return response;
   }
 }
